@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173b32">
+  <title>Bear River Gage Explorer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20342f;
+      --muted: #6e7c75;
+      --line: #e2e8e2;
+      --paper: #ffffff;
+      --canvas: #f3f5f0;
+      --pine: #173b32;
+      --pine-soft: #e6efe9;
+      --water: #4a91a1;
+      --gold: #c8984d;
+      --shadow: 0 12px 32px rgba(32, 52, 47, .07);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 72px;
+      padding: 0 clamp(20px, 4vw, 56px);
+      color: #f5f8f5;
+      background: var(--pine);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: .88rem;
+      font-weight: 720;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      color: #dcebe1;
+      border: 1px solid rgba(255, 255, 255, .27);
+      border-radius: 11px;
+    }
+
+    .topbar-meta {
+      color: #ccdbd2;
+      font-size: .8rem;
+    }
+
+    .page {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 34px clamp(16px, 4vw, 56px) 48px;
+    }
+
+    .intro {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin: 0 0 23px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #61776b;
+      font-size: .72rem;
+      font-weight: 750;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      color: #1d302b;
+      font-size: clamp(1.7rem, 3vw, 2.45rem);
+      font-weight: 690;
+      letter-spacing: -.045em;
+      line-height: 1.12;
+    }
+
+    .intro-copy {
+      max-width: 680px;
+      margin: 0;
+      color: var(--muted);
+      font-size: .96rem;
+      line-height: 1.6;
+    }
+
+    .mockup-badge {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 13px;
+      color: #765a26;
+      background: #f5ecd9;
+      border: 1px solid #eadcbd;
+      border-radius: 999px;
+      font-size: .76rem;
+      font-weight: 720;
+      white-space: nowrap;
+    }
+
+    .mockup-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    .sample-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 11px;
+      margin-bottom: 19px;
+      padding: 12px 15px;
+      color: #4c6257;
+      background: #eaf0e9;
+      border: 1px solid #dce6dc;
+      border-radius: 12px;
+      font-size: .82rem;
+      line-height: 1.45;
+    }
+
+    .sample-notice strong {
+      color: #26443a;
+    }
+
+    .notice-icon {
+      display: grid;
+      flex: 0 0 auto;
+      width: 19px;
+      height: 19px;
+      place-items: center;
+      color: #355a49;
+      border: 1px solid #aebfae;
+      border-radius: 50%;
+      font-size: .72rem;
+      font-weight: 800;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(0, 1.34fr) minmax(340px, .86fr);
+      align-items: start;
+      gap: 18px;
+    }
+
+    .side-column {
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      min-width: 0;
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 17px 19px;
+      border-bottom: 1px solid #edf0ec;
+    }
+
+    .card-heading h2 {
+      margin: 0;
+      font-size: .98rem;
+      font-weight: 690;
+      letter-spacing: -.01em;
+    }
+
+    .card-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: .74rem;
+    }
+
+    .map-count {
+      padding: 6px 9px;
+      color: #4b6257;
+      background: #eff3ee;
+      border-radius: 999px;
+      font-size: .71rem;
+      font-weight: 690;
+      white-space: nowrap;
+    }
+
+    .map-wrap {
+      position: relative;
+      min-height: 426px;
+      background: #e9eee7;
+    }
+
+    .map-art {
+      display: block;
+      width: 100%;
+      height: 426px;
+    }
+
+    .map-art text {
+      font-family: inherit;
+    }
+
+    .map-label {
+      fill: #698174;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .town-label {
+      fill: #78877c;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .river-label {
+      fill: #3b8191;
+      font-size: 12px;
+      font-style: italic;
+      font-weight: 650;
+    }
+
+    .site-marker {
+      cursor: pointer;
+      outline: none;
+    }
+
+    .site-marker .marker-halo {
+      fill: rgba(32, 87, 67, .13);
+      opacity: 0;
+      transition: opacity .16s ease;
+    }
+
+    .site-marker .marker-core {
+      fill: #28684d;
+      stroke: #fff;
+      stroke-width: 3px;
+      transition: fill .16s ease, r .16s ease;
+    }
+
+    .site-marker:hover .marker-halo,
+    .site-marker:focus .marker-halo,
+    .site-marker.is-selected .marker-halo {
+      opacity: 1;
+    }
+
+    .site-marker.is-selected .marker-core {
+      fill: #bc8540;
+    }
+
+    .site-marker.is-historical .marker-core {
+      fill: #7d8c83;
+    }
+
+    .historical-marker {
+      display: none;
+    }
+
+    .historical-on .historical-marker {
+      display: inline;
+    }
+
+    .map-zoom {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: grid;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid #dce4dc;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(32, 52, 47, .1);
+    }
+
+    .map-zoom button {
+      display: grid;
+      width: 36px;
+      height: 35px;
+      place-items: center;
+      color: #40584d;
+      background: transparent;
+      border: 0;
+      font-size: 1.1rem;
+      font-weight: 650;
+    }
+
+    .map-zoom button + button {
+      border-top: 1px solid #e6ebe5;
+    }
+
+    .map-zoom button:disabled {
+      color: #718078;
+      cursor: default;
+    }
+
+    .map-caption {
+      position: absolute;
+      right: 14px;
+      bottom: 12px;
+      left: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: #52665a;
+      font-size: .68rem;
+      pointer-events: none;
+    }
+
+    .map-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border-top: 1px solid #edf0ec;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #596a61;
+      font-size: .72rem;
+    }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      background: #28684d;
+      border: 2px solid #dce8df;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px #28684d;
+    }
+
+    .legend-dot.historical {
+      background: #7d8c83;
+      box-shadow: 0 0 0 1px #7d8c83;
+    }
+
+    .legend-line {
+      width: 18px;
+      height: 0;
+      border-top: 2px dashed #7e9a80;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #52635a;
+      font-size: .75rem;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: var(--pine);
+    }
+
+    .station-list {
+      max-height: 266px;
+      overflow-y: auto;
+      padding: 6px 10px 10px;
+    }
+
+    .site-item {
+      display: grid;
+      width: 100%;
+      grid-template-columns: 35px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 9px;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s ease;
+    }
+
+    .site-item:hover,
+    .site-item:focus-visible {
+      background: #f5f7f3;
+    }
+
+    .site-item[aria-current="true"] {
+      background: #edf3ee;
+    }
+
+    .site-avatar {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      color: #3b6952;
+      background: #e5eee7;
+      border-radius: 10px;
+      font-size: .67rem;
+      font-weight: 750;
+    }
+
+    .site-avatar.historical {
+      color: #6d7b72;
+      background: #edf0ec;
+    }
+
+    .site-name {
+      display: block;
+      overflow: hidden;
+      color: #293d35;
+      font-size: .79rem;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .site-id {
+      display: block;
+      margin-top: 3px;
+      color: #87928a;
+      font-size: .67rem;
+    }
+
+    .site-flow {
+      color: #365447;
+      font-size: .76rem;
+      font-weight: 720;
+      white-space: nowrap;
+    }
+
+    .site-flow small {
+      color: #839087;
+      font-size: .65rem;
+      font-weight: 500;
+    }
+
+    .historical-tag {
+      padding: 4px 6px;
+      color: #69786f;
+      background: #edf0ec;
+      border-radius: 5px;
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .details-content {
+      padding: 17px 19px 19px;
+    }
+
+    .selected-site {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .selected-site h3 {
+      margin: 0 0 4px;
+      font-size: 1.04rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    .selected-id {
+      margin: 0;
+      color: #819087;
+      font-size: .71rem;
+    }
+
+    .status-chip {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      color: #3a6950;
+      background: #e8f1e9;
+      border-radius: 999px;
+      font-size: .65rem;
+      font-weight: 730;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-bottom: 14px;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 11px 12px;
+      background: #f5f7f3;
+      border: 1px solid #edf0ea;
+      border-radius: 10px;
+    }
+
+    .metric-label {
+      display: block;
+      margin-bottom: 6px;
+      color: #7e8b82;
+      font-size: .65rem;
+      font-weight: 650;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      display: block;
+      overflow: hidden;
+      color: #233a30;
+      font-size: 1.02rem;
+      font-weight: 740;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metric-value small {
+      color: #738178;
+      font-size: .68rem;
+      font-weight: 560;
+    }
+
+    .reading-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 16px;
+      color: #7b8880;
+      font-size: .68rem;
+    }
+
+    .reading-time {
+      color: #52645a;
+      font-weight: 600;
+    }
+
+    .usgs-link {
+      color: #376d57;
+      font-size: .72rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .usgs-link:hover,
+    .usgs-link:focus-visible {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .chart-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 5px;
+    }
+
+    .chart-heading h3 {
+      margin: 0;
+      color: #40564b;
+      font-size: .75rem;
+      font-weight: 700;
+    }
+
+    .chart-heading span {
+      color: #89958d;
+      font-size: .63rem;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .chart-empty {
+      margin: 20px 0;
+      color: #78867d;
+      font-size: .75rem;
+      text-align: center;
+    }
+
+    .chart {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .chart text {
+      fill: #839087;
+      font-family: inherit;
+      font-size: 10px;
+    }
+
+    .chart-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 5px;
+      padding-top: 11px;
+      border-top: 1px solid #edf0ec;
+    }
+
+    .mean-label {
+      color: #718077;
+      font-size: .7rem;
+    }
+
+    .mean-value {
+      color: #264438;
+      font-size: .88rem;
+      font-weight: 750;
+    }
+
+    .mean-value small {
+      color: #748278;
+      font-size: .67rem;
+      font-weight: 550;
+    }
+
+    .days-used {
+      color: #7f8a82;
+      font-size: .66rem;
+      white-space: nowrap;
+    }
+
+    .states {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .state {
+      padding: 13px 15px;
+      background: rgba(255, 255, 255, .74);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .state strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #53665b;
+      font-size: .7rem;
+    }
+
+    .state p {
+      margin: 0;
+      color: #819087;
+      font-size: .68rem;
+      line-height: 1.45;
+    }
+
+    .state.loading {
+      border-left: 3px solid #78a99b;
+    }
+
+    .state.error {
+      border-left: 3px solid #c17c67;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 22px;
+      color: #89948c;
+      font-size: .66rem;
+    }
+
+    :focus-visible {
+      outline: 3px solid #c8984d;
+      outline-offset: 3px;
+    }
+
+    @media (max-width: 960px) {
+      .dashboard {
+        grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
+        gap: 13px;
+      }
+
+      .side-column {
+        gap: 13px;
+      }
+
+      .map-wrap,
+      .map-art {
+        height: 396px;
+        min-height: 396px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        min-height: 62px;
+      }
+
+      .topbar-meta {
+        display: none;
+      }
+
+      .page {
+        padding-top: 25px;
+      }
+
+      .intro {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 13px;
+      }
+
+      .dashboard {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .side-column {
+        display: contents;
+      }
+
+      .map-card {
+        grid-row: 1;
+      }
+
+      .stations-card {
+        grid-row: 2;
+      }
+
+      .details-card {
+        grid-row: 3;
+      }
+
+      .map-wrap,
+      .map-art {
+        height: min(105vw, 430px);
+        min-height: 315px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .brand {
+        font-size: .74rem;
+      }
+
+      .page {
+        padding-right: 12px;
+        padding-left: 12px;
+      }
+
+      .card-heading {
+        padding: 14px;
+      }
+
+      .map-wrap,
+      .map-art {
+        height: 335px;
+        min-height: 335px;
+      }
+
+      .map-caption {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .states {
+        grid-template-columns: 1fr;
+      }
+
+      .details-content {
+        padding: 15px;
+      }
+
+      .footer {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M4 5c4 0 4 5 8 5s4-5 8-5M4 12c4 0 4 5 8 5s4-5 8-5M4 19c4 0 4-5 8-5s4 5 8 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span>Bear River Basin</span>
+    </div>
+    <span class="topbar-meta">Water data explorer / Utah, Idaho, Wyoming</span>
+  </header>
+
+  <main class="page">
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Streamflow monitoring</p>
+        <h1 id="page-title">Bear River Gage Explorer</h1>
+        <p class="intro-copy">Explore stream gages across the Bear River Basin and inspect recent conditions at each monitoring site.</p>
+      </div>
+      <div class="mockup-badge"><span class="mockup-dot" aria-hidden="true"></span>Stage 1 / interface mockup</div>
+    </section>
+
+    <div class="sample-notice" role="status">
+      <span class="notice-icon" aria-hidden="true">i</span>
+      <div><strong>Mockup only.</strong> The map, stations, readings, and chart below use illustrative sample values. Live USGS data and calculations are not connected in this stage.</div>
+    </div>
+
+    <section class="dashboard" aria-label="Gage explorer dashboard">
+      <article class="card map-card" aria-labelledby="map-title">
+        <div class="card-heading">
+          <div>
+            <h2 id="map-title">Basin gage map</h2>
+            <p>Hydrologic Unit 1601 / Bear River</p>
+          </div>
+          <span class="map-count" id="mapCount">5 current / sample</span>
+        </div>
+        <div class="map-wrap" id="mapWrap">
+          <svg class="map-art" viewBox="0 0 820 560" role="img" aria-labelledby="map-svg-title map-svg-desc" preserveAspectRatio="xMidYMid slice">
+            <title id="map-svg-title">Illustrative Bear River Basin map</title>
+            <desc id="map-svg-desc">A placeholder basin outline with sample river lines, towns, and selectable sample gage markers. It is not a geographic map.</desc>
+            <defs>
+              <pattern id="map-grid" width="46" height="46" patternUnits="userSpaceOnUse">
+                <path d="M46 0H0V46" fill="none" stroke="#dce5da" stroke-width="1"/>
+              </pattern>
+              <linearGradient id="basin-fill" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#dce9d9"/>
+                <stop offset="1" stop-color="#c5dac9"/>
+              </linearGradient>
+              <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#6b8876" flood-opacity=".15"/>
+              </filter>
+            </defs>
+            <rect width="820" height="560" fill="#edf1e9"/>
+            <rect width="820" height="560" fill="url(#map-grid)" opacity=".8"/>
+            <path d="M31 122c91-44 152-29 209-72 41-31 86-19 128-7 58 16 81 53 141 44 59-9 102 20 154 12 51-8 92 19 127 43v127c-38 25-63 63-103 77-46 17-64 70-105 91-56 29-78 78-142 83-47 4-81-11-121 2-49 16-96 7-117-25-24-36-69-41-100-61-32-21-46-54-75-75-32-23-34-62-49-91-13-25-15-107 3-148Z" fill="#e1eadc" opacity=".8"/>
+            <path d="M147 88c48-35 93-33 132-12 30 16 57 25 86 23 48-3 72 22 107 27 47 7 73-3 114 14 29 12 76 9 111 33 32 22 59 59 40 95-18 35-12 66-43 92-24 19-38 56-75 64-34 7-53 34-82 57-31 25-64 41-101 32-37-9-67 4-103 10-42 7-63-21-80-48-20-32-59-43-82-70-27-30-35-65-57-94-20-26-41-53-31-85 9-28 25-63 21-91-5-26 22-34 43-47Z" fill="url(#basin-fill)" stroke="#819d7e" stroke-width="2.2" stroke-dasharray="7 6" filter="url(#soft-shadow)"/>
+            <path d="M397 75c-23 42-7 72-20 104-12 30-45 44-42 79 3 35 34 49 24 83-8 28-46 39-41 70 4 29 33 42 17 76" fill="none" stroke="#72a9b5" stroke-width="5" stroke-linecap="round"/>
+            <path d="M277 158c25 15 38 32 57 39M472 146c-27 21-44 31-96 33M291 327c18-23 39-34 68-43M483 259c-42 5-65 17-121 42M447 385c-28 1-55 13-84 31" fill="none" stroke="#97c0c5" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M87 174c48-22 75-8 117-30M586 117c28 4 49 20 84 19M541 420c24-22 47-31 88-33M129 384c28 3 41 16 66 40" fill="none" stroke="#c1d1b9" stroke-width="2"/>
+            <text x="281" y="106" class="map-label">BEAR RIVER BASIN</text>
+            <text x="347" y="244" class="river-label" transform="rotate(74 347 244)">Bear River</text>
+            <text x="227" y="139" class="town-label">IDAHO</text>
+            <text x="539" y="216" class="town-label">WYOMING</text>
+            <text x="493" y="390" class="town-label">UTAH</text>
+            <circle cx="221" cy="219" r="3" fill="#738a78"/>
+            <text x="230" y="223" class="town-label">Montpelier</text>
+            <circle cx="549" cy="304" r="3" fill="#738a78"/>
+            <text x="558" y="308" class="town-label">Evanston</text>
+            <circle cx="442" cy="440" r="3" fill="#738a78"/>
+            <text x="451" y="444" class="town-label">Logan</text>
+            <g class="site-marker is-selected" data-site-id="SAMPLE-01" role="button" tabindex="0" aria-label="Select sample gage 01" transform="translate(384 112)">
+              <circle class="marker-halo" r="16"/>
+              <circle class="marker-core" r="8"/>
+            </g>
+            <g class="site-marker" data-site-id="SAMPLE-02" role="button" tabindex="0" aria-label="Select sample gage 02" transform="translate(344 211)">
+              <circle class="marker-halo" r="16"/>
+              <circle class="marker-core" r="7"/>
+            </g>
+            <g class="site-marker" data-site-id="SAMPLE-03" role="button" tabindex="0" aria-label="Select sample gage 03" transform="translate(420 277)">
+              <circle class="marker-halo" r="16"/>
+              <circle class="marker-core" r="7"/>
+            </g>
+            <g class="site-marker" data-site-id="SAMPLE-04" role="button" tabindex="0" aria-label="Select sample gage 04" transform="translate(494 357)">
+              <circle class="marker-halo" r="16"/>
+              <circle class="marker-core" r="7"/>
+            </g>
+            <g class="site-marker" data-site-id="SAMPLE-05" role="button" tabindex="0" aria-label="Select sample gage 05" transform="translate(326 396)">
+              <circle class="marker-halo" r="16"/>
+              <circle class="marker-core" r="7"/>
+            </g>
+            <g class="site-marker is-historical historical-marker" data-site-id="HIST-01" role="button" tabindex="0" aria-label="Select sample historical gage 01" transform="translate(257 291)">
+              <circle class="marker-halo" r="16"/>
+              <circle class="marker-core" r="7"/>
+            </g>
+            <g class="site-marker is-historical historical-marker" data-site-id="HIST-02" role="button" tabindex="0" aria-label="Select sample historical gage 02" transform="translate(542 191)">
+              <circle class="marker-halo" r="16"/>
+              <circle class="marker-core" r="7"/>
+            </g>
+          </svg>
+          <div class="map-zoom" aria-label="Map controls shown for layout only">
+            <button type="button" disabled aria-label="Zoom in (added in stage 2)">+</button>
+            <button type="button" disabled aria-label="Zoom out (added in stage 2)">-</button>
+          </div>
+          <div class="map-caption">
+            <span>Illustrative basin boundary and station positions</span>
+            <span>Map navigation added in stage 2</span>
+          </div>
+        </div>
+        <div class="map-legend" aria-label="Map legend">
+          <span class="legend-item"><span class="legend-dot" aria-hidden="true"></span>Current sample gage</span>
+          <span class="legend-item"><span class="legend-dot historical" aria-hidden="true"></span>Historical sample gage</span>
+          <span class="legend-item"><span class="legend-line" aria-hidden="true"></span>Approximate basin edge</span>
+        </div>
+      </article>
+
+      <div class="side-column">
+        <article class="card stations-card" aria-labelledby="stations-title">
+          <div class="card-heading">
+            <div>
+              <h2 id="stations-title">Stream gages</h2>
+              <p id="stationCount">5 sample sites shown</p>
+            </div>
+            <label class="toggle" for="historicalToggle">
+              <input id="historicalToggle" type="checkbox">
+              Historical
+            </label>
+          </div>
+          <div class="station-list" id="stationList" aria-label="Sample stream gages"></div>
+        </article>
+
+        <article class="card details-card" aria-labelledby="details-title">
+          <div class="card-heading">
+            <div>
+              <h2 id="details-title">Selected gage</h2>
+              <p>Site information and daily flow</p>
+            </div>
+            <span class="map-count">Sample details</span>
+          </div>
+          <div class="details-content">
+            <div class="selected-site">
+              <div>
+                <h3 id="siteName">Sample Gage 01</h3>
+                <p class="selected-id">Site number <span id="siteNumber">SAMPLE-01</span></p>
+              </div>
+              <span class="status-chip" id="siteStatus">Current / sample</span>
+            </div>
+
+            <div class="metrics">
+              <div class="metric">
+                <span class="metric-label">Most recent flow</span>
+                <span class="metric-value"><span id="siteFlow">82.4</span> <small id="siteFlowUnit">cfs</small></span>
+              </div>
+              <div class="metric">
+                <span class="metric-label">Drainage area</span>
+                <span class="metric-value"><span id="siteArea">1,240</span> <small>mi<sup>2</sup></small></span>
+              </div>
+            </div>
+
+            <div class="reading-meta">
+              <span>Reading time</span>
+              <span class="reading-time" id="readingTime">Nov 19, 2026 / 8:00 AM MT</span>
+            </div>
+            <div class="reading-meta">
+              <span>Data qualifier</span>
+              <span class="reading-time" id="dataQualifier">Sample / provisional</span>
+            </div>
+            <p style="margin: 0 0 17px;"><a class="usgs-link" href="https://waterdata.usgs.gov/" target="_blank" rel="noreferrer">Open USGS site <span aria-hidden="true">&rarr;</span></a></p>
+
+            <div class="chart-heading">
+              <h3 id="chartTitle">Daily mean discharge / sample</h3>
+              <span>Past 365 days</span>
+            </div>
+            <div class="chart-wrap">
+              <svg class="chart" viewBox="0 0 440 150" role="img" aria-labelledby="chart-svg-title chart-svg-desc">
+                <title id="chart-svg-title">Illustrative daily discharge hydrograph</title>
+                <desc id="chart-svg-desc">A sample line chart with flow in cubic feet per second over the past year. Values are not live USGS data.</desc>
+                <line x1="42" y1="15" x2="42" y2="119" stroke="#dfe6df"/>
+                <line x1="42" y1="119" x2="424" y2="119" stroke="#dfe6df"/>
+                <line x1="42" y1="67" x2="424" y2="67" stroke="#edf1ec" stroke-dasharray="4 5"/>
+                <line x1="42" y1="15" x2="424" y2="15" stroke="#edf1ec" stroke-dasharray="4 5"/>
+                <text x="8" y="122">0</text>
+                <text x="4" y="70">100</text>
+                <text x="4" y="18">200</text>
+                <text x="43" y="139">365 days ago</text>
+                <text x="203" y="139">180 days ago</text>
+                <text x="390" y="139">Today</text>
+                <path d="M43 103 C58 98 62 84 75 91 S97 106 108 88 S127 72 139 83 S154 96 167 78 S188 73 199 84 S216 102 228 81 S246 55 259 69 S277 92 288 74 S306 61 318 77 S334 93 346 66 S365 42 377 61 S396 85 408 57 S418 48 424 52" fill="none" stroke="#3f8874" stroke-width="3" stroke-linecap="round"/>
+                <path d="M43 103 C58 98 62 84 75 91 S97 106 108 88 S127 72 139 83 S154 96 167 78 S188 73 199 84 S216 102 228 81 S246 55 259 69 S277 92 288 74 S306 61 318 77 S334 93 346 66 S365 42 377 61 S396 85 408 57 S418 48 424 52 L424 119 L43 119Z" fill="#8fc2b1" opacity=".16"/>
+                <circle cx="424" cy="52" r="4" fill="#3f8874" stroke="#fff" stroke-width="2"/>
+              </svg>
+            </div>
+            <p class="chart-empty" id="chartEmpty" hidden>No sample daily flow is available for this site in the chart window.</p>
+            <div class="chart-summary">
+              <div>
+                <span class="mean-label">Mean daily flow</span><br>
+                <span class="mean-value"><span id="meanFlow">58.2</span> <small>cfs</small></span>
+              </div>
+              <span class="days-used"><span id="daysUsed">342</span> sample daily values</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="states" aria-label="Example application states">
+      <div class="state loading">
+        <strong>Loading state / example</strong>
+        <p>Loading basin boundary and gage locations from USGS sources...</p>
+      </div>
+      <div class="state error">
+        <strong>Service error state / example</strong>
+        <p>Gage data could not be loaded. Try again later; no live data is shown.</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>Stage 1 mockup / all displayed measurements and locations are illustrative.</span>
+      <span>USGS Water Data API and Watershed Boundary Dataset attribution will be connected in stage 2.</span>
+    </footer>
+  </main>
+
+  <script>
+    const sampleSites = [
+      { id: "SAMPLE-01", name: "Sample Gage 01 / Upper Bear River", flow: "82.4", area: "1,240", time: "Nov 19, 2026 / 8:00 AM MT", qualifier: "Sample / provisional", mean: "58.2", days: "342", historic: false },
+      { id: "SAMPLE-02", name: "Sample Gage 02 / Smith Fork", flow: "41.7", area: "86", time: "Nov 19, 2026 / 7:45 AM MT", qualifier: "Sample / approved", mean: "32.8", days: "365", historic: false },
+      { id: "SAMPLE-03", name: "Sample Gage 03 / Bear River Reach", flow: "116.0", area: "2,180", time: "Nov 19, 2026 / 7:30 AM MT", qualifier: "Sample / approved", mean: "94.6", days: "351", historic: false },
+      { id: "SAMPLE-04", name: "Sample Gage 04 / Logan Tributary", flow: "29.8", area: "67", time: "Nov 19, 2026 / 7:15 AM MT", qualifier: "Sample / provisional", mean: "21.4", days: "338", historic: false },
+      { id: "SAMPLE-05", name: "Sample Gage 05 / Lower Reach", flow: "54.2", area: "163", time: "Nov 19, 2026 / 7:00 AM MT", qualifier: "Sample / approved", mean: "47.1", days: "359", historic: false },
+      { id: "HIST-01", name: "Historical Sample 01 / North Fork", flow: null, area: "412", time: "No recent sample reading", qualifier: "Not available", mean: "Unavailable", days: "0", historic: true },
+      { id: "HIST-02", name: "Historical Sample 02 / Valley Reach", flow: null, area: "305", time: "No recent sample reading", qualifier: "Not available", mean: "Unavailable", days: "0", historic: true }
+    ];
+
+    const stationList = document.getElementById("stationList");
+    const historicalToggle = document.getElementById("historicalToggle");
+    const mapWrap = document.getElementById("mapWrap");
+    let selectedSiteId = "SAMPLE-01";
+
+    function renderStationList() {
+      const visibleSites = sampleSites.filter(function (site) {
+        return !site.historic || historicalToggle.checked;
+      });
+
+      stationList.replaceChildren();
+      visibleSites.forEach(function (site) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "site-item";
+        button.dataset.siteId = site.id;
+        button.setAttribute("aria-current", String(site.id === selectedSiteId));
+
+        const avatar = document.createElement("span");
+        avatar.className = site.historic ? "site-avatar historical" : "site-avatar";
+        avatar.textContent = site.historic ? "H" : "G";
+        avatar.setAttribute("aria-hidden", "true");
+
+        const details = document.createElement("span");
+        const name = document.createElement("span");
+        name.className = "site-name";
+        name.textContent = site.name;
+        const id = document.createElement("span");
+        id.className = "site-id";
+        id.textContent = "Site number " + site.id;
+        details.append(name, id);
+
+        const value = document.createElement("span");
+        if (site.historic) {
+          value.className = "historical-tag";
+          value.textContent = "Historical";
+        } else {
+          value.className = "site-flow";
+          value.textContent = site.flow + " ";
+          const unit = document.createElement("small");
+          unit.textContent = "cfs";
+          value.append(unit);
+        }
+
+        button.append(avatar, details, value);
+        stationList.append(button);
+      });
+
+      const currentCount = sampleSites.filter(function (site) { return !site.historic; }).length;
+      const historicalCount = historicalToggle.checked ? sampleSites.filter(function (site) { return site.historic; }).length : 0;
+      document.getElementById("stationCount").textContent = (currentCount + historicalCount) + " sample sites shown";
+      document.getElementById("mapCount").textContent = currentCount + " current" + (historicalCount ? " + " + historicalCount + " historical" : "") + " / sample";
+      mapWrap.classList.toggle("historical-on", historicalToggle.checked);
+    }
+
+    function selectSite(siteId) {
+      const site = sampleSites.find(function (item) { return item.id === siteId; });
+      if (!site) return;
+
+      if (site.historic && !historicalToggle.checked) {
+        historicalToggle.checked = true;
+      }
+      selectedSiteId = site.id;
+      renderStationList();
+
+      document.getElementById("siteName").textContent = site.name;
+      document.getElementById("siteNumber").textContent = site.id;
+      document.getElementById("siteStatus").textContent = site.historic ? "Historical / sample" : "Current / sample";
+      document.getElementById("siteFlow").textContent = site.flow === null ? "Unavailable" : site.flow;
+      document.getElementById("siteFlowUnit").textContent = site.flow === null ? "" : "cfs";
+      document.getElementById("siteArea").textContent = site.area;
+      document.getElementById("readingTime").textContent = site.time;
+      document.getElementById("dataQualifier").textContent = site.qualifier;
+      document.getElementById("meanFlow").textContent = site.mean;
+      document.getElementById("daysUsed").textContent = site.days;
+      document.getElementById("chartTitle").textContent = "Daily mean discharge / " + site.name + " / sample";
+      document.querySelector(".chart-wrap").hidden = site.days === "0";
+      document.getElementById("chartEmpty").hidden = site.days !== "0";
+      document.querySelectorAll(".site-marker").forEach(function (marker) {
+        marker.classList.toggle("is-selected", marker.dataset.siteId === site.id);
+      });
+    }
+
+    historicalToggle.addEventListener("change", function () {
+      const selectedSite = sampleSites.find(function (site) { return site.id === selectedSiteId; });
+      if (!historicalToggle.checked && selectedSite && selectedSite.historic) {
+        selectSite(sampleSites.find(function (site) { return !site.historic; }).id);
+      } else {
+        renderStationList();
+      }
+    });
+
+    stationList.addEventListener("click", function (event) {
+      const button = event.target.closest("[data-site-id]");
+      if (button) selectSite(button.dataset.siteId);
+    });
+
+    mapWrap.addEventListener("click", function (event) {
+      const marker = event.target.closest(".site-marker");
+      if (marker) selectSite(marker.dataset.siteId);
+    });
+
+    mapWrap.addEventListener("keydown", function (event) {
+      const marker = event.target.closest(".site-marker");
+      if (marker && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        selectSite(marker.dataset.siteId);
+      }
+    });
+
+    renderStationList();
+  </script>
+</body>
+</html>
