@@ -596,6 +596,10 @@
       text-align: center;
     }
 
+    .chart-empty.error {
+      color: #7a3d32;
+    }
+
     .chart {
       display: block;
       width: 100%;
@@ -971,11 +975,25 @@
       mapMessage.textContent = message;
       if (isError) {
         serviceStatus.setAttribute("role", "alert");
+        serviceStatus.setAttribute("aria-live", "assertive");
         mapMessage.setAttribute("role", "alert");
+        mapMessage.setAttribute("aria-live", "assertive");
       } else {
         serviceStatus.setAttribute("role", "status");
+        serviceStatus.setAttribute("aria-live", "polite");
         mapMessage.setAttribute("role", "status");
+        mapMessage.setAttribute("aria-live", "polite");
       }
+    }
+
+    function showGageLoadError(prefix, error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      showStatus(prefix + detail, true);
+      document.getElementById("stationCount").textContent = "Gage data unavailable";
+      const message = document.createElement("div");
+      message.className = "site-empty";
+      message.textContent = "The live gage list is unavailable. Try reloading after checking your connection.";
+      stationList.replaceChildren(message);
     }
 
     async function requestJson(url, label) {
@@ -1458,12 +1476,16 @@
       const status = document.getElementById("chartStatus");
       status.textContent = message;
       status.hidden = false;
+      status.classList.toggle("error", state === "error");
       status.setAttribute("role", state === "error" ? "alert" : "status");
+      status.setAttribute("aria-live", state === "error" ? "assertive" : "polite");
       document.getElementById("chartDateRange").textContent = dateRange
         ? formatDailyDate(dateRange.startDate, true) + " - " + formatDailyDate(dateRange.endDate, true)
         : "Select a gage";
       document.getElementById("meanFlow").textContent = "Unavailable";
-      document.getElementById("dailyCount").textContent = state === "loading" ? "Loading..." : "0 daily values used";
+      document.getElementById("dailyCount").textContent = state === "loading"
+        ? "Loading..."
+        : state === "error" ? "Unavailable" : "0 daily values used";
     }
 
     async function loadDailyChart(site) {
@@ -1732,18 +1754,10 @@
     try {
       initializeMap();
       loadBasinAndGages().catch(function (error) {
-        const detail = error instanceof Error ? error.message : String(error);
-        showStatus("Live basin and gage data could not be loaded. " + detail, true);
-        document.getElementById("stationCount").textContent = "Gage data unavailable";
-        stationList.replaceChildren();
-        const message = document.createElement("div");
-        message.className = "site-empty";
-        message.textContent = "The live gage list is unavailable. Try reloading after checking your connection.";
-        stationList.append(message);
+        showGageLoadError("Live basin and gage data could not be loaded. ", error);
       });
     } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error);
-      showStatus("The interactive map could not be started. " + detail, true);
+      showGageLoadError("The interactive map could not be started. ", error);
     }
   </script>
 </body>
