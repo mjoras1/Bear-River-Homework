@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#173b32">
   <title>Bear River Gage Explorer</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <style>
     :root {
       color-scheme: light;
@@ -234,125 +235,52 @@
 
     .map-wrap {
       position: relative;
+      height: 426px;
       min-height: 426px;
       background: #e9eee7;
     }
 
-    .map-art {
-      display: block;
+    #leafletMap {
       width: 100%;
-      height: 426px;
+      height: 100%;
+      min-height: 426px;
+      background: #e9eee7;
     }
 
-    .map-art text {
-      font-family: inherit;
-    }
-
-    .map-label {
-      fill: #698174;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 2px;
-    }
-
-    .town-label {
-      fill: #78877c;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .river-label {
-      fill: #3b8191;
-      font-size: 12px;
-      font-style: italic;
-      font-weight: 650;
-    }
-
-    .site-marker {
-      cursor: pointer;
-      outline: none;
-    }
-
-    .site-marker .marker-halo {
-      fill: rgba(32, 87, 67, .13);
-      opacity: 0;
-      transition: opacity .16s ease;
-    }
-
-    .site-marker .marker-core {
-      fill: #28684d;
-      stroke: #fff;
-      stroke-width: 3px;
-      transition: fill .16s ease, r .16s ease;
-    }
-
-    .site-marker:hover .marker-halo,
-    .site-marker:focus .marker-halo,
-    .site-marker.is-selected .marker-halo {
-      opacity: 1;
-    }
-
-    .site-marker.is-selected .marker-core {
-      fill: #bc8540;
-    }
-
-    .site-marker.is-historical .marker-core {
-      fill: #7d8c83;
-    }
-
-    .historical-marker {
-      display: none;
-    }
-
-    .historical-on .historical-marker {
-      display: inline;
-    }
-
-    .map-zoom {
+    .map-message {
       position: absolute;
+      z-index: 700;
       top: 14px;
-      right: 14px;
-      display: grid;
-      overflow: hidden;
-      background: rgba(255, 255, 255, .94);
-      border: 1px solid #dce4dc;
-      border-radius: 10px;
-      box-shadow: 0 4px 14px rgba(32, 52, 47, .1);
-    }
-
-    .map-zoom button {
-      display: grid;
-      width: 36px;
-      height: 35px;
-      place-items: center;
-      color: #40584d;
-      background: transparent;
-      border: 0;
-      font-size: 1.1rem;
-      font-weight: 650;
-    }
-
-    .map-zoom button + button {
-      border-top: 1px solid #e6ebe5;
-    }
-
-    .map-zoom button:disabled {
-      color: #718078;
-      cursor: default;
-    }
-
-    .map-caption {
-      position: absolute;
-      right: 14px;
-      bottom: 12px;
       left: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      color: #52665a;
-      font-size: .68rem;
-      pointer-events: none;
+      max-width: min(390px, calc(100% - 76px));
+      padding: 10px 13px;
+      color: #40584d;
+      background: rgba(255, 255, 255, .96);
+      border: 1px solid #dce5dc;
+      border-radius: 10px;
+      box-shadow: 0 4px 14px rgba(32, 52, 47, .12);
+      font-size: .75rem;
+      line-height: 1.4;
+    }
+
+    .map-message.error {
+      color: #7a3d32;
+      border-color: #e7c9c1;
+    }
+
+    .map-reset {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      color: #38564a;
+      background: #fff;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .leaflet-control-attribution {
+      font-size: 9px !important;
     }
 
     .map-legend {
@@ -408,6 +336,41 @@
       height: 16px;
       margin: 0;
       accent-color: var(--pine);
+    }
+
+    .service-status {
+      margin: 0 0 18px;
+      padding: 12px 15px;
+      color: #40584d;
+      background: #eaf0e9;
+      border: 1px solid #dce6dc;
+      border-radius: 12px;
+      font-size: .82rem;
+      line-height: 1.45;
+    }
+
+    .service-status.error {
+      color: #7a3d32;
+      background: #f7ece8;
+      border-color: #e7c9c1;
+    }
+
+    .site-empty {
+      padding: 18px 12px;
+      color: #77857c;
+      font-size: .78rem;
+      line-height: 1.5;
+    }
+
+    .site-flow.current {
+      color: #3b6952;
+    }
+
+    .site-flow.historical {
+      color: #78857d;
+      font-size: .66rem;
+      font-weight: 650;
+      text-transform: uppercase;
     }
 
     .station-list {
@@ -714,6 +677,16 @@
       border-left: 3px solid #c17c67;
     }
 
+    .stage-placeholder {
+      color: #75837a;
+      font-size: .72rem;
+      font-weight: 650;
+    }
+
+    .leaflet-container {
+      font: inherit;
+    }
+
     .footer {
       display: flex;
       justify-content: space-between;
@@ -739,7 +712,7 @@
       }
 
       .map-wrap,
-      .map-art {
+      #leafletMap {
         height: 396px;
         min-height: 396px;
       }
@@ -785,7 +758,7 @@
       }
 
       .map-wrap,
-      .map-art {
+      #leafletMap {
         height: min(105vw, 430px);
         min-height: 315px;
       }
@@ -806,15 +779,9 @@
       }
 
       .map-wrap,
-      .map-art {
+      #leafletMap {
         height: 335px;
         min-height: 335px;
-      }
-
-      .map-caption {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 3px;
       }
 
       .states {
@@ -851,13 +818,10 @@
         <h1 id="page-title">Bear River Gage Explorer</h1>
         <p class="intro-copy">Explore stream gages across the Bear River Basin and inspect recent conditions at each monitoring site.</p>
       </div>
-      <div class="mockup-badge"><span class="mockup-dot" aria-hidden="true"></span>Stage 1 / interface mockup</div>
+      <div class="mockup-badge"><span class="mockup-dot" aria-hidden="true"></span>Stage 2 / live basin map</div>
     </section>
 
-    <div class="sample-notice" role="status">
-      <span class="notice-icon" aria-hidden="true">i</span>
-      <div><strong>Mockup only.</strong> The map, stations, readings, and chart below use illustrative sample values. Live USGS data and calculations are not connected in this stage.</div>
-    </div>
+    <div class="service-status" id="serviceStatus" role="status" aria-live="polite">Loading live basin boundary and USGS stream gages...</div>
 
     <section class="dashboard" aria-label="Gage explorer dashboard">
       <article class="card map-card" aria-labelledby="map-title">
@@ -866,84 +830,16 @@
             <h2 id="map-title">Basin gage map</h2>
             <p>Hydrologic Unit 1601 / Bear River</p>
           </div>
-          <span class="map-count" id="mapCount">5 current / sample</span>
+          <span class="map-count" id="mapCount">Loading sites...</span>
         </div>
         <div class="map-wrap" id="mapWrap">
-          <svg class="map-art" viewBox="0 0 820 560" role="img" aria-labelledby="map-svg-title map-svg-desc" preserveAspectRatio="xMidYMid slice">
-            <title id="map-svg-title">Illustrative Bear River Basin map</title>
-            <desc id="map-svg-desc">A placeholder basin outline with sample river lines, towns, and selectable sample gage markers. It is not a geographic map.</desc>
-            <defs>
-              <pattern id="map-grid" width="46" height="46" patternUnits="userSpaceOnUse">
-                <path d="M46 0H0V46" fill="none" stroke="#dce5da" stroke-width="1"/>
-              </pattern>
-              <linearGradient id="basin-fill" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#dce9d9"/>
-                <stop offset="1" stop-color="#c5dac9"/>
-              </linearGradient>
-              <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#6b8876" flood-opacity=".15"/>
-              </filter>
-            </defs>
-            <rect width="820" height="560" fill="#edf1e9"/>
-            <rect width="820" height="560" fill="url(#map-grid)" opacity=".8"/>
-            <path d="M31 122c91-44 152-29 209-72 41-31 86-19 128-7 58 16 81 53 141 44 59-9 102 20 154 12 51-8 92 19 127 43v127c-38 25-63 63-103 77-46 17-64 70-105 91-56 29-78 78-142 83-47 4-81-11-121 2-49 16-96 7-117-25-24-36-69-41-100-61-32-21-46-54-75-75-32-23-34-62-49-91-13-25-15-107 3-148Z" fill="#e1eadc" opacity=".8"/>
-            <path d="M147 88c48-35 93-33 132-12 30 16 57 25 86 23 48-3 72 22 107 27 47 7 73-3 114 14 29 12 76 9 111 33 32 22 59 59 40 95-18 35-12 66-43 92-24 19-38 56-75 64-34 7-53 34-82 57-31 25-64 41-101 32-37-9-67 4-103 10-42 7-63-21-80-48-20-32-59-43-82-70-27-30-35-65-57-94-20-26-41-53-31-85 9-28 25-63 21-91-5-26 22-34 43-47Z" fill="url(#basin-fill)" stroke="#819d7e" stroke-width="2.2" stroke-dasharray="7 6" filter="url(#soft-shadow)"/>
-            <path d="M397 75c-23 42-7 72-20 104-12 30-45 44-42 79 3 35 34 49 24 83-8 28-46 39-41 70 4 29 33 42 17 76" fill="none" stroke="#72a9b5" stroke-width="5" stroke-linecap="round"/>
-            <path d="M277 158c25 15 38 32 57 39M472 146c-27 21-44 31-96 33M291 327c18-23 39-34 68-43M483 259c-42 5-65 17-121 42M447 385c-28 1-55 13-84 31" fill="none" stroke="#97c0c5" stroke-width="2.6" stroke-linecap="round"/>
-            <path d="M87 174c48-22 75-8 117-30M586 117c28 4 49 20 84 19M541 420c24-22 47-31 88-33M129 384c28 3 41 16 66 40" fill="none" stroke="#c1d1b9" stroke-width="2"/>
-            <text x="281" y="106" class="map-label">BEAR RIVER BASIN</text>
-            <text x="347" y="244" class="river-label" transform="rotate(74 347 244)">Bear River</text>
-            <text x="227" y="139" class="town-label">IDAHO</text>
-            <text x="539" y="216" class="town-label">WYOMING</text>
-            <text x="493" y="390" class="town-label">UTAH</text>
-            <circle cx="221" cy="219" r="3" fill="#738a78"/>
-            <text x="230" y="223" class="town-label">Montpelier</text>
-            <circle cx="549" cy="304" r="3" fill="#738a78"/>
-            <text x="558" y="308" class="town-label">Evanston</text>
-            <circle cx="442" cy="440" r="3" fill="#738a78"/>
-            <text x="451" y="444" class="town-label">Logan</text>
-            <g class="site-marker is-selected" data-site-id="SAMPLE-01" role="button" tabindex="0" aria-label="Select sample gage 01" transform="translate(384 112)">
-              <circle class="marker-halo" r="16"/>
-              <circle class="marker-core" r="8"/>
-            </g>
-            <g class="site-marker" data-site-id="SAMPLE-02" role="button" tabindex="0" aria-label="Select sample gage 02" transform="translate(344 211)">
-              <circle class="marker-halo" r="16"/>
-              <circle class="marker-core" r="7"/>
-            </g>
-            <g class="site-marker" data-site-id="SAMPLE-03" role="button" tabindex="0" aria-label="Select sample gage 03" transform="translate(420 277)">
-              <circle class="marker-halo" r="16"/>
-              <circle class="marker-core" r="7"/>
-            </g>
-            <g class="site-marker" data-site-id="SAMPLE-04" role="button" tabindex="0" aria-label="Select sample gage 04" transform="translate(494 357)">
-              <circle class="marker-halo" r="16"/>
-              <circle class="marker-core" r="7"/>
-            </g>
-            <g class="site-marker" data-site-id="SAMPLE-05" role="button" tabindex="0" aria-label="Select sample gage 05" transform="translate(326 396)">
-              <circle class="marker-halo" r="16"/>
-              <circle class="marker-core" r="7"/>
-            </g>
-            <g class="site-marker is-historical historical-marker" data-site-id="HIST-01" role="button" tabindex="0" aria-label="Select sample historical gage 01" transform="translate(257 291)">
-              <circle class="marker-halo" r="16"/>
-              <circle class="marker-core" r="7"/>
-            </g>
-            <g class="site-marker is-historical historical-marker" data-site-id="HIST-02" role="button" tabindex="0" aria-label="Select sample historical gage 02" transform="translate(542 191)">
-              <circle class="marker-halo" r="16"/>
-              <circle class="marker-core" r="7"/>
-            </g>
-          </svg>
-          <div class="map-zoom" aria-label="Map controls shown for layout only">
-            <button type="button" disabled aria-label="Zoom in (added in stage 2)">+</button>
-            <button type="button" disabled aria-label="Zoom out (added in stage 2)">-</button>
-          </div>
-          <div class="map-caption">
-            <span>Illustrative basin boundary and station positions</span>
-            <span>Map navigation added in stage 2</span>
-          </div>
+          <div id="leafletMap" role="application" aria-label="Interactive map of Bear River Basin and USGS stream gages"></div>
+          <div class="map-message" id="mapMessage" role="status">Loading basin boundary and stream gages...</div>
         </div>
         <div class="map-legend" aria-label="Map legend">
-          <span class="legend-item"><span class="legend-dot" aria-hidden="true"></span>Current sample gage</span>
-          <span class="legend-item"><span class="legend-dot historical" aria-hidden="true"></span>Historical sample gage</span>
-          <span class="legend-item"><span class="legend-line" aria-hidden="true"></span>Approximate basin edge</span>
+          <span class="legend-item"><span class="legend-dot" aria-hidden="true"></span>Current gage / flow within 7 days</span>
+          <span class="legend-item"><span class="legend-dot historical" aria-hidden="true"></span>Historical gage</span>
+          <span class="legend-item"><span class="legend-line" aria-hidden="true"></span>HUC 1601 boundary</span>
         </div>
       </article>
 
@@ -951,57 +847,59 @@
         <article class="card stations-card" aria-labelledby="stations-title">
           <div class="card-heading">
             <div>
-              <h2 id="stations-title">Stream gages</h2>
-              <p id="stationCount">5 sample sites shown</p>
+              <h2 id="stations-title">USGS stream gages</h2>
+              <p id="stationCount">Loading locations...</p>
             </div>
             <label class="toggle" for="historicalToggle">
-              <input id="historicalToggle" type="checkbox">
+              <input id="historicalToggle" type="checkbox" disabled>
               Historical
             </label>
           </div>
-          <div class="station-list" id="stationList" aria-label="Sample stream gages"></div>
+          <div class="station-list" id="stationList" aria-label="USGS stream gages" aria-live="polite">
+            <div class="site-empty">Loading stream gage locations...</div>
+          </div>
         </article>
 
         <article class="card details-card" aria-labelledby="details-title">
           <div class="card-heading">
             <div>
               <h2 id="details-title">Selected gage</h2>
-              <p>Site information and daily flow</p>
+              <p>Site details and hydrograph are added in later stages</p>
             </div>
-            <span class="map-count">Sample details</span>
+            <span class="map-count">Stage 3 / 4</span>
           </div>
           <div class="details-content">
             <div class="selected-site">
               <div>
-                <h3 id="siteName">Sample Gage 01</h3>
-                <p class="selected-id">Site number <span id="siteNumber">SAMPLE-01</span></p>
+                <h3 id="siteName">No gage selected</h3>
+                <p class="selected-id">Site number <span id="siteNumber">Select a marker or list item</span></p>
               </div>
-              <span class="status-chip" id="siteStatus">Current / sample</span>
+              <span class="status-chip" id="siteStatus">Awaiting selection</span>
             </div>
 
             <div class="metrics">
               <div class="metric">
                 <span class="metric-label">Most recent flow</span>
-                <span class="metric-value"><span id="siteFlow">82.4</span> <small id="siteFlowUnit">cfs</small></span>
+                <span class="metric-value stage-placeholder" id="siteFlow">Added in stage 3</span>
               </div>
               <div class="metric">
                 <span class="metric-label">Drainage area</span>
-                <span class="metric-value"><span id="siteArea">1,240</span> <small>mi<sup>2</sup></small></span>
+                <span class="metric-value stage-placeholder" id="siteArea">Added in stage 3</span>
               </div>
             </div>
 
             <div class="reading-meta">
               <span>Reading time</span>
-              <span class="reading-time" id="readingTime">Nov 19, 2026 / 8:00 AM MT</span>
+              <span class="reading-time stage-placeholder" id="readingTime">Added in stage 3</span>
             </div>
             <div class="reading-meta">
               <span>Data qualifier</span>
-              <span class="reading-time" id="dataQualifier">Sample / provisional</span>
+              <span class="reading-time stage-placeholder" id="dataQualifier">Added in stage 3</span>
             </div>
-            <p style="margin: 0 0 17px;"><a class="usgs-link" href="https://waterdata.usgs.gov/" target="_blank" rel="noreferrer">Open USGS site <span aria-hidden="true">&rarr;</span></a></p>
+            <p style="margin: 0 0 17px;"><span class="stage-placeholder">USGS site link added in stage 3</span></p>
 
             <div class="chart-heading">
-              <h3 id="chartTitle">Daily mean discharge / sample</h3>
+              <h3 id="chartTitle">Daily mean discharge / stage 4</h3>
               <span>Past 365 days</span>
             </div>
             <div class="chart-wrap">
@@ -1023,158 +921,486 @@
                 <circle cx="424" cy="52" r="4" fill="#3f8874" stroke="#fff" stroke-width="2"/>
               </svg>
             </div>
-            <p class="chart-empty" id="chartEmpty" hidden>No sample daily flow is available for this site in the chart window.</p>
+            <p class="chart-empty">Illustrative placeholder only / live hydrograph and mean are added in stage 4.</p>
             <div class="chart-summary">
               <div>
                 <span class="mean-label">Mean daily flow</span><br>
-                <span class="mean-value"><span id="meanFlow">58.2</span> <small>cfs</small></span>
+                <span class="mean-value stage-placeholder">Added in stage 4</span>
               </div>
-              <span class="days-used"><span id="daysUsed">342</span> sample daily values</span>
+              <span class="days-used stage-placeholder">Daily value count added in stage 4</span>
             </div>
           </div>
         </article>
       </div>
     </section>
 
-    <section class="states" aria-label="Example application states">
-      <div class="state loading">
-        <strong>Loading state / example</strong>
-        <p>Loading basin boundary and gage locations from USGS sources...</p>
-      </div>
-      <div class="state error">
-        <strong>Service error state / example</strong>
-        <p>Gage data could not be loaded. Try again later; no live data is shown.</p>
-      </div>
-    </section>
-
     <footer class="footer">
-      <span>Stage 1 mockup / all displayed measurements and locations are illustrative.</span>
-      <span>USGS Water Data API and Watershed Boundary Dataset attribution will be connected in stage 2.</span>
+      <span>Site locations and flow-recency classifications are loaded from USGS Water Data.</span>
+      <span>
+        <a href="https://api.waterdata.usgs.gov/docs/ogcapi/" target="_blank" rel="noreferrer">USGS Water Data API</a>
+        / <a href="https://www.usgs.gov/national-hydrography/watershed-boundary-dataset" target="_blank" rel="noreferrer">Watershed Boundary Dataset</a>
+        / Base map tiles &copy; OpenStreetMap contributors
+      </span>
     </footer>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script>
-    const sampleSites = [
-      { id: "SAMPLE-01", name: "Sample Gage 01 / Upper Bear River", flow: "82.4", area: "1,240", time: "Nov 19, 2026 / 8:00 AM MT", qualifier: "Sample / provisional", mean: "58.2", days: "342", historic: false },
-      { id: "SAMPLE-02", name: "Sample Gage 02 / Smith Fork", flow: "41.7", area: "86", time: "Nov 19, 2026 / 7:45 AM MT", qualifier: "Sample / approved", mean: "32.8", days: "365", historic: false },
-      { id: "SAMPLE-03", name: "Sample Gage 03 / Bear River Reach", flow: "116.0", area: "2,180", time: "Nov 19, 2026 / 7:30 AM MT", qualifier: "Sample / approved", mean: "94.6", days: "351", historic: false },
-      { id: "SAMPLE-04", name: "Sample Gage 04 / Logan Tributary", flow: "29.8", area: "67", time: "Nov 19, 2026 / 7:15 AM MT", qualifier: "Sample / provisional", mean: "21.4", days: "338", historic: false },
-      { id: "SAMPLE-05", name: "Sample Gage 05 / Lower Reach", flow: "54.2", area: "163", time: "Nov 19, 2026 / 7:00 AM MT", qualifier: "Sample / approved", mean: "47.1", days: "359", historic: false },
-      { id: "HIST-01", name: "Historical Sample 01 / North Fork", flow: null, area: "412", time: "No recent sample reading", qualifier: "Not available", mean: "Unavailable", days: "0", historic: true },
-      { id: "HIST-02", name: "Historical Sample 02 / Valley Reach", flow: null, area: "305", time: "No recent sample reading", qualifier: "Not available", mean: "Unavailable", days: "0", historic: true }
-    ];
-
+    const usgsApi = "https://api.waterdata.usgs.gov/ogcapi/v1";
+    const usgsApiOrigin = new URL(usgsApi).origin;
+    const wbdQuery = "https://hydro.nationalmap.gov/arcgis/rest/services/wbd/MapServer/2/query";
+    const recencyWindowMs = 7 * 24 * 60 * 60 * 1000;
     const stationList = document.getElementById("stationList");
     const historicalToggle = document.getElementById("historicalToggle");
-    const mapWrap = document.getElementById("mapWrap");
-    let selectedSiteId = "SAMPLE-01";
+    const serviceStatus = document.getElementById("serviceStatus");
+    const mapMessage = document.getElementById("mapMessage");
+    const sitesById = new Map();
+    const markersById = new Map();
+    let allSites = [];
+    let selectedSiteId = null;
+    let map;
+    let basinBounds;
+    let currentLayer;
+    let historicalLayer;
+
+    function showStatus(message, isError) {
+      serviceStatus.hidden = !message;
+      serviceStatus.classList.toggle("error", Boolean(isError));
+      serviceStatus.textContent = message;
+      mapMessage.hidden = !message;
+      mapMessage.classList.toggle("error", Boolean(isError));
+      mapMessage.textContent = message;
+      if (isError) {
+        serviceStatus.setAttribute("role", "alert");
+        mapMessage.setAttribute("role", "alert");
+      } else {
+        serviceStatus.setAttribute("role", "status");
+        mapMessage.setAttribute("role", "status");
+      }
+    }
+
+    async function requestJson(url, label) {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(label + " request failed (HTTP " + response.status + ").");
+      }
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(label + " service error: " + (data.error.message || "unknown service error") + ".");
+      }
+      return data;
+    }
+
+    async function requestAllFeatures(firstUrl, label) {
+      const features = [];
+      const visited = new Set();
+      let nextUrl = firstUrl;
+
+      while (nextUrl) {
+        if (visited.size >= 100) {
+          throw new Error(label + " pagination exceeded 100 pages.");
+        }
+        const pageUrl = new URL(nextUrl);
+        if (pageUrl.origin !== usgsApiOrigin || !pageUrl.pathname.startsWith("/ogcapi/v1/collections/")) {
+          throw new Error(label + " returned an unexpected pagination link.");
+        }
+        if (visited.has(pageUrl.href)) {
+          throw new Error(label + " returned a repeated pagination link.");
+        }
+        visited.add(pageUrl.href);
+
+        const page = await requestJson(pageUrl.href, label);
+        if (!Array.isArray(page.features)) {
+          throw new Error(label + " response did not contain a feature list.");
+        }
+        features.push.apply(features, page.features);
+        const nextLink = Array.isArray(page.links) ? page.links.find(function (link) {
+          return link.rel === "next";
+        }) : null;
+        nextUrl = nextLink ? new URL(nextLink.href, pageUrl.href).href : null;
+      }
+
+      return features;
+    }
+
+    function collectCoordinates(value, coordinates) {
+      if (!Array.isArray(value)) return;
+      if (typeof value[0] === "number" && typeof value[1] === "number") {
+        coordinates.push(value);
+        return;
+      }
+      value.forEach(function (part) {
+        collectCoordinates(part, coordinates);
+      });
+    }
+
+    function getGeometryBounds(geoJson) {
+      const coordinates = [];
+      geoJson.features.forEach(function (feature) {
+        if (feature.geometry) collectCoordinates(feature.geometry.coordinates, coordinates);
+      });
+      if (!coordinates.length) {
+        throw new Error("The WBD response did not contain usable basin coordinates.");
+      }
+
+      const bounds = [Infinity, Infinity, -Infinity, -Infinity];
+      coordinates.forEach(function (position) {
+        bounds[0] = Math.min(bounds[0], position[0]);
+        bounds[1] = Math.min(bounds[1], position[1]);
+        bounds[2] = Math.max(bounds[2], position[0]);
+        bounds[3] = Math.max(bounds[3], position[1]);
+      });
+      return bounds;
+    }
+
+    function pointOnSegment(point, start, end) {
+      const cross = (point[1] - start[1]) * (end[0] - start[0]) - (point[0] - start[0]) * (end[1] - start[1]);
+      if (Math.abs(cross) > 1e-10) return false;
+      return point[0] >= Math.min(start[0], end[0]) - 1e-10 &&
+        point[0] <= Math.max(start[0], end[0]) + 1e-10 &&
+        point[1] >= Math.min(start[1], end[1]) - 1e-10 &&
+        point[1] <= Math.max(start[1], end[1]) + 1e-10;
+    }
+
+    function pointInRing(point, ring) {
+      let inside = false;
+      for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index, index += 1) {
+        const start = ring[index];
+        const end = ring[previous];
+        if (pointOnSegment(point, start, end)) return true;
+        const crossesLatitude = (start[1] > point[1]) !== (end[1] > point[1]);
+        if (crossesLatitude && point[0] < ((end[0] - start[0]) * (point[1] - start[1])) / (end[1] - start[1]) + start[0]) {
+          inside = !inside;
+        }
+      }
+      return inside;
+    }
+
+    function pointInPolygon(point, rings) {
+      if (!rings.length || !pointInRing(point, rings[0])) return false;
+      return !rings.slice(1).some(function (hole) {
+        return pointInRing(point, hole);
+      });
+    }
+
+    function pointInBasin(point, geometries) {
+      const geometryList = Array.isArray(geometries) ? geometries : [geometries];
+      return geometryList.some(function (geometry) {
+        if (!geometry) return false;
+        if (geometry.type === "Polygon") {
+          return pointInPolygon(point, geometry.coordinates);
+        }
+        if (geometry.type === "MultiPolygon") {
+          return geometry.coordinates.some(function (polygon) {
+            return pointInPolygon(point, polygon);
+          });
+        }
+        return false;
+      });
+    }
+
+    function fetchBasinBoundary() {
+      const url = new URL(wbdQuery);
+      url.search = new URLSearchParams({
+        where: "HUC4='1601'",
+        outFields: "HUC4,NAME",
+        returnGeometry: "true",
+        outSR: "4326",
+        f: "geojson"
+      });
+      return requestJson(url.href, "USGS Watershed Boundary Dataset");
+    }
+
+    function fetchLocationFeatures(bounds) {
+      const url = new URL(usgsApi + "/collections/monitoring-locations/items");
+      url.search = new URLSearchParams({
+        f: "json",
+        limit: "1000",
+        agency_code: "USGS",
+        site_type_code: "ST",
+        bbox: bounds.join(",")
+      });
+      return requestAllFeatures(url.href, "USGS monitoring locations");
+    }
+
+    function fetchLatestFlowFeatures(bounds) {
+      const url = new URL(usgsApi + "/collections/latest-continuous/items");
+      url.search = new URLSearchParams({
+        f: "json",
+        limit: "1000",
+        agency_code: "USGS",
+        site_type_code: "ST",
+        parameter_code: "00060",
+        statistic_id: "00011",
+        bbox: bounds.join(",")
+      });
+      return requestAllFeatures(url.href, "USGS latest streamflow");
+    }
+
+    function createLatestFlowIndex(features) {
+      const latestBySite = new Map();
+      features.forEach(function (feature) {
+        const properties = feature.properties || {};
+        const value = properties.value;
+        const valueNumber = value === null || value === "" ? NaN : Number(value);
+        const timeMs = Date.parse(properties.time);
+        if (!properties.monitoring_location_id || !Number.isFinite(valueNumber) || !Number.isFinite(timeMs)) return;
+
+        const previous = latestBySite.get(properties.monitoring_location_id);
+        if (!previous || timeMs > previous.timeMs) {
+          latestBySite.set(properties.monitoring_location_id, {
+            timeMs: timeMs,
+            value: valueNumber,
+            qualifier: properties.qualifier || null,
+            approvalStatus: properties.approval_status || null
+          });
+        }
+      });
+      return latestBySite;
+    }
+
+    function normalizeSites(locationFeatures, latestBySite, boundary) {
+      const now = Date.now();
+      const uniqueSites = new Map();
+      locationFeatures.forEach(function (feature) {
+        const properties = feature.properties || {};
+        const coordinates = feature.geometry && feature.geometry.coordinates;
+        if (!Array.isArray(coordinates) || coordinates.length < 2) return;
+        const longitude = Number(coordinates[0]);
+        const latitude = Number(coordinates[1]);
+        if (!Number.isFinite(longitude) || !Number.isFinite(latitude) || !pointInBasin([longitude, latitude], boundary)) return;
+
+        const siteNumber = properties.monitoring_location_number;
+        const id = properties.id || (siteNumber ? "USGS-" + siteNumber : "");
+        if (!id || uniqueSites.has(id)) return;
+        const latestFlow = latestBySite.get(id) || null;
+        const isCurrent = Boolean(latestFlow &&
+          latestFlow.timeMs <= now &&
+          now - latestFlow.timeMs <= recencyWindowMs);
+
+        uniqueSites.set(id, {
+          id: id,
+          number: siteNumber || id.replace(/^USGS-/, ""),
+          name: properties.monitoring_location_name || "Unnamed USGS stream site",
+          latitude: latitude,
+          longitude: longitude,
+          current: isCurrent
+        });
+      });
+
+      return Array.from(uniqueSites.values()).sort(function (a, b) {
+        return a.name.localeCompare(b.name) || a.number.localeCompare(b.number);
+      });
+    }
+
+    function updateMarkerStyles() {
+      markersById.forEach(function (marker, siteId) {
+        const site = sitesById.get(siteId);
+        const selected = siteId === selectedSiteId;
+        marker.setStyle({
+          color: "#ffffff",
+          weight: selected ? 3 : 1.5,
+          fillColor: selected ? "#bc8540" : (site.current ? "#28684d" : "#7d8c83"),
+          fillOpacity: 0.96,
+          radius: selected ? 8 : (site.current ? 6 : 5)
+        });
+      });
+    }
 
     function renderStationList() {
-      const visibleSites = sampleSites.filter(function (site) {
-        return !site.historic || historicalToggle.checked;
+      const visibleSites = allSites.filter(function (site) {
+        return site.current || historicalToggle.checked;
       });
-
       stationList.replaceChildren();
-      visibleSites.forEach(function (site) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "site-item";
-        button.dataset.siteId = site.id;
-        button.setAttribute("aria-current", String(site.id === selectedSiteId));
 
-        const avatar = document.createElement("span");
-        avatar.className = site.historic ? "site-avatar historical" : "site-avatar";
-        avatar.textContent = site.historic ? "H" : "G";
-        avatar.setAttribute("aria-hidden", "true");
+      if (!visibleSites.length) {
+        const emptyMessage = document.createElement("div");
+        emptyMessage.className = "site-empty";
+        emptyMessage.textContent = allSites.length
+          ? "No current gages are available. Turn on Historical to show all sites."
+          : "No matching USGS stream gages were found inside HUC 1601.";
+        stationList.append(emptyMessage);
+      } else {
+        visibleSites.forEach(function (site) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "site-item";
+          button.dataset.siteId = site.id;
+          button.setAttribute("aria-current", String(site.id === selectedSiteId));
 
-        const details = document.createElement("span");
-        const name = document.createElement("span");
-        name.className = "site-name";
-        name.textContent = site.name;
-        const id = document.createElement("span");
-        id.className = "site-id";
-        id.textContent = "Site number " + site.id;
-        details.append(name, id);
+          const avatar = document.createElement("span");
+          avatar.className = site.current ? "site-avatar" : "site-avatar historical";
+          avatar.textContent = site.current ? "G" : "H";
+          avatar.setAttribute("aria-hidden", "true");
 
-        const value = document.createElement("span");
-        if (site.historic) {
-          value.className = "historical-tag";
-          value.textContent = "Historical";
-        } else {
-          value.className = "site-flow";
-          value.textContent = site.flow + " ";
-          const unit = document.createElement("small");
-          unit.textContent = "cfs";
-          value.append(unit);
-        }
+          const details = document.createElement("span");
+          const name = document.createElement("span");
+          name.className = "site-name";
+          name.textContent = site.name;
+          const id = document.createElement("span");
+          id.className = "site-id";
+          id.textContent = "USGS site " + site.number;
+          details.append(name, id);
 
-        button.append(avatar, details, value);
-        stationList.append(button);
-      });
+          const status = document.createElement("span");
+          status.className = site.current ? "site-flow current" : "site-flow historical";
+          status.textContent = site.current ? "Current" : "Historical";
 
-      const currentCount = sampleSites.filter(function (site) { return !site.historic; }).length;
-      const historicalCount = historicalToggle.checked ? sampleSites.filter(function (site) { return site.historic; }).length : 0;
-      document.getElementById("stationCount").textContent = (currentCount + historicalCount) + " sample sites shown";
-      document.getElementById("mapCount").textContent = currentCount + " current" + (historicalCount ? " + " + historicalCount + " historical" : "") + " / sample";
-      mapWrap.classList.toggle("historical-on", historicalToggle.checked);
+          button.append(avatar, details, status);
+          stationList.append(button);
+        });
+      }
+
+      const currentCount = allSites.filter(function (site) { return site.current; }).length;
+      const historicalCount = allSites.length - currentCount;
+      const displayedCount = visibleSites.length;
+      document.getElementById("stationCount").textContent =
+        "Showing " + displayedCount + " of " + allSites.length + " sites / " +
+        currentCount + " current, " + historicalCount + " historical";
+      document.getElementById("mapCount").textContent =
+        displayedCount + " shown / " + currentCount + " current";
+      updateMarkerStyles();
     }
 
     function selectSite(siteId) {
-      const site = sampleSites.find(function (item) { return item.id === siteId; });
+      const site = sitesById.get(siteId);
       if (!site) return;
 
-      if (site.historic && !historicalToggle.checked) {
+      if (!site.current && !historicalToggle.checked) {
         historicalToggle.checked = true;
+        historicalLayer.addTo(map);
       }
       selectedSiteId = site.id;
+      document.getElementById("siteName").textContent = site.name;
+      document.getElementById("siteNumber").textContent = site.number;
+      document.getElementById("siteStatus").textContent = site.current ? "Current / last 7 days" : "Historical";
       renderStationList();
 
-      document.getElementById("siteName").textContent = site.name;
-      document.getElementById("siteNumber").textContent = site.id;
-      document.getElementById("siteStatus").textContent = site.historic ? "Historical / sample" : "Current / sample";
-      document.getElementById("siteFlow").textContent = site.flow === null ? "Unavailable" : site.flow;
-      document.getElementById("siteFlowUnit").textContent = site.flow === null ? "" : "cfs";
-      document.getElementById("siteArea").textContent = site.area;
-      document.getElementById("readingTime").textContent = site.time;
-      document.getElementById("dataQualifier").textContent = site.qualifier;
-      document.getElementById("meanFlow").textContent = site.mean;
-      document.getElementById("daysUsed").textContent = site.days;
-      document.getElementById("chartTitle").textContent = "Daily mean discharge / " + site.name + " / sample";
-      document.querySelector(".chart-wrap").hidden = site.days === "0";
-      document.getElementById("chartEmpty").hidden = site.days !== "0";
-      document.querySelectorAll(".site-marker").forEach(function (marker) {
-        marker.classList.toggle("is-selected", marker.dataset.siteId === site.id);
-      });
+      const marker = markersById.get(site.id);
+      if (marker) map.panTo(marker.getLatLng());
     }
 
-    historicalToggle.addEventListener("change", function () {
-      const selectedSite = sampleSites.find(function (site) { return site.id === selectedSiteId; });
-      if (!historicalToggle.checked && selectedSite && selectedSite.historic) {
-        selectSite(sampleSites.find(function (site) { return !site.historic; }).id);
-      } else {
+    function initializeMap() {
+      if (typeof L === "undefined") {
+        throw new Error("The Leaflet map library could not be loaded. Check your internet connection and reload.");
+      }
+
+      map = L.map("leafletMap", { scrollWheelZoom: false }).setView([41.9, -111.3], 7);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\" rel=\"noreferrer\">OpenStreetMap contributors</a>"
+      }).addTo(map);
+      L.control.scale({ imperial: true, metric: false }).addTo(map);
+      currentLayer = L.layerGroup().addTo(map);
+      historicalLayer = L.layerGroup();
+
+      const reset = L.control({ position: "topright" });
+      reset.onAdd = function () {
+        const container = L.DomUtil.create("div", "leaflet-bar");
+        const button = L.DomUtil.create("button", "map-reset", container);
+        button.type = "button";
+        button.textContent = "Reset";
+        button.setAttribute("aria-label", "Reset map to the Bear River Basin");
+        L.DomEvent.disableClickPropagation(container);
+        button.addEventListener("click", function () {
+          if (basinBounds) map.fitBounds(basinBounds, { padding: [18, 18] });
+        });
+        return container;
+      };
+      reset.addTo(map);
+    }
+
+    async function loadBasinAndGages() {
+      showStatus("Loading the HUC 1601 boundary and USGS stream gages...", false);
+      const boundaryData = await fetchBasinBoundary();
+      if (!Array.isArray(boundaryData.features) || !boundaryData.features.length) {
+        throw new Error("The WBD service returned no HUC 1601 boundary.");
+      }
+      const geometryBounds = getGeometryBounds(boundaryData);
+      const [locationFeatures, flowFeatures] = await Promise.all([
+        fetchLocationFeatures(geometryBounds),
+        fetchLatestFlowFeatures(geometryBounds)
+      ]);
+
+      const boundaryLayer = L.geoJSON(boundaryData, {
+        style: {
+          color: "#527a59",
+          weight: 2,
+          opacity: 0.95,
+          dashArray: "6 5",
+          fillColor: "#b9d1b4",
+          fillOpacity: 0.18
+        }
+      }).addTo(map);
+      basinBounds = boundaryLayer.getBounds();
+      if (!basinBounds.isValid()) {
+        throw new Error("The WBD service returned an invalid HUC 1601 boundary.");
+      }
+
+      const latestBySite = createLatestFlowIndex(flowFeatures);
+      allSites = normalizeSites(locationFeatures, latestBySite, boundaryData.features.map(function (feature) {
+        return feature.geometry;
+      }));
+      allSites.forEach(function (site) {
+        sitesById.set(site.id, site);
+        const marker = L.circleMarker([site.latitude, site.longitude], {
+          radius: site.current ? 6 : 5,
+          color: "#ffffff",
+          weight: 1.5,
+          fillColor: site.current ? "#28684d" : "#7d8c83",
+          fillOpacity: 0.96
+        });
+        marker.on("click", function () { selectSite(site.id); });
+        markersById.set(site.id, marker);
+        marker.addTo(site.current ? currentLayer : historicalLayer);
+      });
+
+      map.fitBounds(basinBounds, { padding: [18, 18] });
+      historicalToggle.disabled = false;
+      historicalToggle.addEventListener("change", function () {
+        if (historicalToggle.checked) {
+          historicalLayer.addTo(map);
+        } else {
+          map.removeLayer(historicalLayer);
+          if (selectedSiteId && sitesById.has(selectedSiteId) && !sitesById.get(selectedSiteId).current) {
+            selectedSiteId = null;
+            document.getElementById("siteName").textContent = "No gage selected";
+            document.getElementById("siteNumber").textContent = "Select a marker or list item";
+            document.getElementById("siteStatus").textContent = "Awaiting selection";
+          }
+        }
         renderStationList();
+      });
+      stationList.addEventListener("click", function (event) {
+        const button = event.target.closest("[data-site-id]");
+        if (button) selectSite(button.dataset.siteId);
+      });
+      renderStationList();
+
+      if (!allSites.length) {
+        showStatus("The HUC 1601 boundary loaded, but no USGS stream sites were found inside it.", true);
+        return;
       }
-    });
+      serviceStatus.hidden = true;
+      mapMessage.hidden = true;
+    }
 
-    stationList.addEventListener("click", function (event) {
-      const button = event.target.closest("[data-site-id]");
-      if (button) selectSite(button.dataset.siteId);
-    });
-
-    mapWrap.addEventListener("click", function (event) {
-      const marker = event.target.closest(".site-marker");
-      if (marker) selectSite(marker.dataset.siteId);
-    });
-
-    mapWrap.addEventListener("keydown", function (event) {
-      const marker = event.target.closest(".site-marker");
-      if (marker && (event.key === "Enter" || event.key === " ")) {
-        event.preventDefault();
-        selectSite(marker.dataset.siteId);
-      }
-    });
-
-    renderStationList();
+    try {
+      initializeMap();
+      loadBasinAndGages().catch(function (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        showStatus("Live basin and gage data could not be loaded. " + detail, true);
+        document.getElementById("stationCount").textContent = "Gage data unavailable";
+        stationList.replaceChildren();
+        const message = document.createElement("div");
+        message.className = "site-empty";
+        message.textContent = "The live gage list is unavailable. Try reloading after checking your connection.";
+        stationList.append(message);
+      });
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      showStatus("The interactive map could not be started. " + detail, true);
+    }
   </script>
 </body>
 </html>

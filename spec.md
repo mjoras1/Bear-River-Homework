@@ -16,7 +16,9 @@ The selected gage's chart always covers the 365 days ending on the current date;
 
 ## Calculations
 
-- Request USGS stream sites with discharge data (parameter code `00060`) and retain sites whose coordinates fall inside the HUC 1601 basin boundary. Request all result pages before displaying the sites.
+- Download the HUC 1601 boundary as GeoJSON from the USGS National Map WBD service, layer 2 (4-digit hydrologic units), querying `HUC4 = 1601` and requesting coordinates in EPSG:4326.
+- Request USGS stream monitoring locations from the USGS Water Data OGC API (`monitoring-locations`, `agency_code=USGS`, `site_type_code=ST`) within the boundary's bounding box. Follow every pagination link, then keep only site points inside the HUC 1601 polygon.
+- Request the latest continuous streamflow records from the USGS Water Data OGC API (`latest-continuous`, parameter code `00060`, instantaneous statistic `00011`, USGS stream sites) within the same bounding box. Follow every pagination link and use the latest valid, non-missing record for each site.
 - A site is **current** when it has a non-missing discharge reading timestamped within the previous seven days. The cutoff is evaluated using timestamps in UTC. A reading of 0 cfs is valid. Sites not meeting this rule are historical and are hidden until the historical-gages checkbox is selected.
 - For a selected site, show the latest available non-missing discharge reading and its timestamp. Show the API's data qualifier, if provided. If there is no available reading, show that it is unavailable rather than displaying zero.
 - Plot daily mean discharge (parameter code `00060`, daily mean statistic) for the 365-day chart window. Keep missing days as gaps; do not interpolate or replace them with zero.
