@@ -22,7 +22,8 @@ The selected gage's chart always covers the 365 days ending on the current date;
 - A site is **current** when it has a non-missing discharge reading timestamped within the previous seven days. The cutoff is evaluated using timestamps in UTC. A reading of 0 cfs is valid. Sites not meeting this rule are historical and are hidden until the historical-gages checkbox is selected.
 - For a selected site, show its drainage area from the monitoring-location record in square miles, and its latest available non-missing discharge reading and timestamp. Convert `m^3/s` readings to `cfs` by multiplying by 35.3146667; `ft^3/s` readings are already in `cfs`. Do not label an unsupported unit as `cfs`. Show the API's data qualifier and approval status when provided. If any value is unavailable, say so rather than displaying zero.
 - Link each selected site to its official USGS monitoring-location page using its site number.
-- Plot daily mean discharge (parameter code `00060`, daily mean statistic) for the 365-day chart window. Keep missing days as gaps; do not interpolate or replace them with zero.
+- Request daily values from the USGS Water Data OGC API `daily` collection for the selected monitoring-location ID, parameter code `00060`, and daily mean statistic ID `00003`. Query 365 consecutive calendar dates, inclusive, ending on today's date in `America/Denver`.
+- Plot daily mean discharge (`cfs`) against those dates. Convert supported units to `cfs`; keep missing dates as gaps and do not interpolate or replace them with zero.
 - Compute the displayed mean daily flow over the chart window as
   `mean flow (cfs) = sum of available daily mean flows (cfs) / number of available daily values`.
   Exclude missing days from both the sum and count, and show the number of daily values used. Do not round values before calculating; display flow to one decimal place.
@@ -44,11 +45,11 @@ Use a clean, professional river-and-forest visual theme with restrained green an
 
 ## Validation
 
-**Hand calculation for the mean-flow calculation:** For three available daily mean flows of 12, 18, and 30 cfs, with no missing days:
+**Hand calculation for the mean-flow calculation:** For daily mean flows of 12, a missing day, 18, and 30 cfs:
 
 `mean flow = (12 + 18 + 30) / 3 = 20 cfs`
 
-The app's mean-flow result for this test data must be 20.0 cfs and must report 3 daily values used. Missing days must not be included in the denominator.
+The app's mean-flow result for this test data must be 20.0 cfs and must report 3 daily values used. The missing day must appear as a gap and must not be included in the denominator.
 
 **Live-data validation:** Compare the most recent flow and drainage area shown for three selected gages with their official USGS pages. For one of those gages, download the daily mean flows for the chart window and independently calculate their arithmetic mean, excluding missing days. Record the three site numbers, observation times, source values, and hand-computed mean in `02_validation` before claiming the live-data validation passes.
 
@@ -72,6 +73,6 @@ Add these only after the required app behavior passes validation:
 1. **Responsive mockup:** Create the single-file page layout with a placeholder basin map, gage list, historical-gages control, selected-gage details, sample hydrograph, mean-flow summary, and clear sample/loading/error states. Use illustrative values only; do not connect live services or implement flow calculations. Check desktop and phone layouts and make sure selecting a sample gage and showing/hiding sample historical gages demonstrates the intended interface.
 2. **Live basin and gage map:** Load the HUC 1601 boundary and all matching USGS streamflow sites, handle paginated results, classify current and historical sites using the seven-day rule, and show markers and the historical-gages toggle. Check basin coverage, marker locations, site counts, toggle behavior, and service error states.
 3. **Selected-gage details:** Connect map markers and the gage list to the selected-gage panel. Show the site's name, number, drainage area, latest non-missing flow, timestamp, qualifier when provided, and official USGS link. Check valid, zero, stale, and missing readings against source pages.
-4. **Hydrograph and validation:** Load the selected site's daily mean flows for the 365-day window, show gaps for missing days, calculate the mean and valid-day count, and complete the hand calculation and live-data comparisons. Record source values and results in `02_validation`; fix discrepancies before marking validation complete.
+4. **Hydrograph and validation:** Load the selected site's daily mean flows from the `daily` collection for 365 consecutive Mountain-time calendar dates, show gaps for missing days, calculate the mean and valid-day count, and complete the hand calculation and live-data comparisons. Record source values and results in `02_validation`; fix discrepancies before marking validation complete.
 
 After the required app passes validation, implement each item in **Features** as its own change, check it, and commit it separately.
