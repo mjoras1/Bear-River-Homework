@@ -20,7 +20,8 @@ The selected gage's chart always covers the 365 days ending on the current date;
 - Request USGS stream monitoring locations from the USGS Water Data OGC API (`monitoring-locations`, `agency_code=USGS`, `site_type_code=ST`) within the boundary's bounding box. Follow every pagination link, then keep only site points inside the HUC 1601 polygon.
 - Request the latest continuous streamflow records from the USGS Water Data OGC API (`latest-continuous`, parameter code `00060`, instantaneous statistic `00011`, USGS stream sites) within the same bounding box. Follow every pagination link and use the latest valid, non-missing record for each site.
 - A site is **current** when it has a non-missing discharge reading timestamped within the previous seven days. The cutoff is evaluated using timestamps in UTC. A reading of 0 cfs is valid. Sites not meeting this rule are historical and are hidden until the historical-gages checkbox is selected.
-- For a selected site, show the latest available non-missing discharge reading and its timestamp. Show the API's data qualifier, if provided. If there is no available reading, show that it is unavailable rather than displaying zero.
+- For a selected site, show its drainage area from the monitoring-location record in square miles, and its latest available non-missing discharge reading and timestamp. Convert `m^3/s` readings to `cfs` by multiplying by 35.3146667; `ft^3/s` readings are already in `cfs`. Do not label an unsupported unit as `cfs`. Show the API's data qualifier and approval status when provided. If any value is unavailable, say so rather than displaying zero.
+- Link each selected site to its official USGS monitoring-location page using its site number.
 - Plot daily mean discharge (parameter code `00060`, daily mean statistic) for the 365-day chart window. Keep missing days as gaps; do not interpolate or replace them with zero.
 - Compute the displayed mean daily flow over the chart window as
   `mean flow (cfs) = sum of available daily mean flows (cfs) / number of available daily values`.
@@ -31,7 +32,7 @@ The selected gage's chart always covers the 365 days ending on the current date;
 
 - A Leaflet map with a visible HUC 1601 basin boundary, current gage markers, a legend, and a count of the displayed sites. Historical sites use a visually distinct marker style when enabled.
 - A gage list with each site's name and site number. Selecting a site from either the list or map highlights it and opens its details.
-- A selected-gage details panel showing name, site number, drainage area (`mi^2`), most recent flow (`cfs`), reading time (Mountain Time), data qualifier when available, and a link to that site's official USGS page.
+- A selected-gage details panel showing name, site number, drainage area (`mi^2`), most recent flow (`cfs`), reading time (Mountain Time), data qualifier and approval status when available, and a link to that site's official USGS page.
 - A labeled hydrograph of daily mean flow (`cfs`) for the past 365 days, with dates on the x-axis and flow on the y-axis. Missing days appear as gaps.
 - The mean daily flow for the chart window and the number of daily values used to calculate it.
 - Clear loading, no-data, and error messages. If a data service fails, explain what could not be loaded rather than presenting an empty map as a successful result.

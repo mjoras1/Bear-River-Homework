@@ -818,7 +818,7 @@
         <h1 id="page-title">Bear River Gage Explorer</h1>
         <p class="intro-copy">Explore stream gages across the Bear River Basin and inspect recent conditions at each monitoring site.</p>
       </div>
-      <div class="mockup-badge"><span class="mockup-dot" aria-hidden="true"></span>Stage 2 / live basin map</div>
+      <div class="mockup-badge"><span class="mockup-dot" aria-hidden="true"></span>Stage 3 / live gage details</div>
     </section>
 
     <div class="service-status" id="serviceStatus" role="status" aria-live="polite">Loading live basin boundary and USGS stream gages...</div>
@@ -864,9 +864,9 @@
           <div class="card-heading">
             <div>
               <h2 id="details-title">Selected gage</h2>
-              <p>Site details and hydrograph are added in later stages</p>
+              <p>Live monitoring-location details</p>
             </div>
-            <span class="map-count">Stage 3 / 4</span>
+            <span class="map-count">Live details</span>
           </div>
           <div class="details-content">
             <div class="selected-site">
@@ -874,29 +874,36 @@
                 <h3 id="siteName">No gage selected</h3>
                 <p class="selected-id">Site number <span id="siteNumber">Select a marker or list item</span></p>
               </div>
-              <span class="status-chip" id="siteStatus">Awaiting selection</span>
+              <span class="status-chip" id="siteStatus">Select a gage</span>
             </div>
 
             <div class="metrics">
               <div class="metric">
                 <span class="metric-label">Most recent flow</span>
-                <span class="metric-value stage-placeholder" id="siteFlow">Added in stage 3</span>
+                <span class="metric-value"><span id="siteFlow">Unavailable</span> <small id="siteFlowUnit"></small></span>
               </div>
               <div class="metric">
                 <span class="metric-label">Drainage area</span>
-                <span class="metric-value stage-placeholder" id="siteArea">Added in stage 3</span>
+                <span class="metric-value"><span id="siteArea">Unavailable</span> <small>mi<sup>2</sup></small></span>
               </div>
             </div>
 
             <div class="reading-meta">
               <span>Reading time</span>
-              <span class="reading-time stage-placeholder" id="readingTime">Added in stage 3</span>
+              <span class="reading-time" id="readingTime">Select a gage</span>
             </div>
             <div class="reading-meta">
               <span>Data qualifier</span>
-              <span class="reading-time stage-placeholder" id="dataQualifier">Added in stage 3</span>
+              <span class="reading-time" id="dataQualifier">Select a gage</span>
             </div>
-            <p style="margin: 0 0 17px;"><span class="stage-placeholder">USGS site link added in stage 3</span></p>
+            <div class="reading-meta">
+              <span>Approval status</span>
+              <span class="reading-time" id="approvalStatus">Select a gage</span>
+            </div>
+            <p style="margin: 0 0 17px;">
+              <span class="stage-placeholder" id="siteLinkPlaceholder">Select a gage to open its USGS page.</span>
+              <a class="usgs-link" id="siteLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Open USGS monitoring page <span aria-hidden="true">&rarr;</span></a>
+            </p>
 
             <div class="chart-heading">
               <h3 id="chartTitle">Daily mean discharge / stage 4</h3>
@@ -1150,7 +1157,9 @@
         if (!previous || timeMs > previous.timeMs) {
           latestBySite.set(properties.monitoring_location_id, {
             timeMs: timeMs,
+            time: properties.time,
             value: valueNumber,
+            unit: properties.unit_of_measure || null,
             qualifier: properties.qualifier || null,
             approvalStatus: properties.approval_status || null
           });
@@ -1184,6 +1193,10 @@
           name: properties.monitoring_location_name || "Unnamed USGS stream site",
           latitude: latitude,
           longitude: longitude,
+          drainageArea: properties.drainage_area === null || properties.drainage_area === ""
+            ? null
+            : Number.isFinite(Number(properties.drainage_area)) ? Number(properties.drainage_area) : null,
+          latestFlow: latestFlow,
           current: isCurrent
         });
       });
@@ -1191,6 +1204,76 @@
       return Array.from(uniqueSites.values()).sort(function (a, b) {
         return a.name.localeCompare(b.name) || a.number.localeCompare(b.number);
       });
+    }
+
+    function convertFlowToCfs(value, unit) {
+      const normalizedUnit = String(unit || "").replace(/\s/g, "").toLowerCase();
+      if (["ft^3/s", "ft3/s", "ft³/s", "cfs", "cubicfeetpersecond"].includes(normalizedUnit)) {
+        return value;
+      }
+      if (["m^3/s", "m3/s", "m³/s", "cms", "cumecs", "cubicmeterspersecond"].includes(normalizedUnit)) {
+        return value * 35.3146667;
+      }
+      return null;
+    }
+
+    function formatMountainTime(timeMs) {
+      if (!Number.isFinite(timeMs)) return "Unavailable";
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Denver",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        timeZoneName: "short"
+      }).format(new Date(timeMs));
+    }
+
+    function clearSelectedDetails() {
+      document.getElementById("siteName").textContent = "No gage selected";
+      document.getElementById("siteNumber").textContent = "Select a marker or list item";
+      document.getElementById("siteStatus").textContent = "Select a gage";
+      document.getElementById("siteFlow").textContent = "Unavailable";
+      document.getElementById("siteFlowUnit").textContent = "";
+      document.getElementById("siteArea").textContent = "Unavailable";
+      document.getElementById("readingTime").textContent = "Select a gage";
+      document.getElementById("dataQualifier").textContent = "Select a gage";
+      document.getElementById("approvalStatus").textContent = "Select a gage";
+      document.getElementById("siteLink").hidden = true;
+      document.getElementById("siteLinkPlaceholder").hidden = false;
+    }
+
+    function updateSelectedDetails(site) {
+      document.getElementById("siteName").textContent = site.name;
+      document.getElementById("siteNumber").textContent = site.number;
+      document.getElementById("siteStatus").textContent = site.current ? "Current / last 7 days" : "Historical";
+
+      const latestFlow = site.latestFlow;
+      if (!latestFlow) {
+        document.getElementById("siteFlow").textContent = "Unavailable";
+        document.getElementById("siteFlowUnit").textContent = "";
+        document.getElementById("readingTime").textContent = "No discharge reading available";
+        document.getElementById("dataQualifier").textContent = "Not reported";
+        document.getElementById("approvalStatus").textContent = "Not reported";
+      } else {
+        const flowCfs = convertFlowToCfs(latestFlow.value, latestFlow.unit);
+        document.getElementById("siteFlow").textContent = flowCfs === null ? "Unavailable" : flowCfs.toFixed(1);
+        document.getElementById("siteFlowUnit").textContent = flowCfs === null
+          ? "Unsupported unit: " + (latestFlow.unit || "not reported")
+          : "cfs";
+        document.getElementById("readingTime").textContent = formatMountainTime(latestFlow.timeMs);
+        document.getElementById("dataQualifier").textContent = latestFlow.qualifier || "None reported";
+        document.getElementById("approvalStatus").textContent = latestFlow.approvalStatus || "Not reported";
+      }
+
+      document.getElementById("siteArea").textContent = site.drainageArea === null
+        ? "Unavailable"
+        : site.drainageArea.toLocaleString("en-US", { maximumFractionDigits: 2 });
+      const siteLink = document.getElementById("siteLink");
+      siteLink.href = "https://waterdata.usgs.gov/monitoring-location/USGS-" + encodeURIComponent(site.number) + "/";
+      siteLink.hidden = false;
+      document.getElementById("siteLinkPlaceholder").hidden = true;
     }
 
     function updateMarkerStyles() {
@@ -1271,9 +1354,7 @@
         historicalLayer.addTo(map);
       }
       selectedSiteId = site.id;
-      document.getElementById("siteName").textContent = site.name;
-      document.getElementById("siteNumber").textContent = site.number;
-      document.getElementById("siteStatus").textContent = site.current ? "Current / last 7 days" : "Historical";
+      updateSelectedDetails(site);
       renderStationList();
 
       const marker = markersById.get(site.id);
@@ -1364,9 +1445,7 @@
           map.removeLayer(historicalLayer);
           if (selectedSiteId && sitesById.has(selectedSiteId) && !sitesById.get(selectedSiteId).current) {
             selectedSiteId = null;
-            document.getElementById("siteName").textContent = "No gage selected";
-            document.getElementById("siteNumber").textContent = "Select a marker or list item";
-            document.getElementById("siteStatus").textContent = "Awaiting selection";
+            clearSelectedDetails();
           }
         }
         renderStationList();
